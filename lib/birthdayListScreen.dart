@@ -5,13 +5,19 @@ import 'package:intl/intl.dart';
 import '../userModel.dart';
 import '../main.dart';
 
-class BirthdayListScreen extends StatelessWidget {
+class BirthdayListScreen extends StatefulWidget {
+  @override
+  _BirthdayListScreenState createState() => _BirthdayListScreenState();
+}
+
+class _BirthdayListScreenState extends State<BirthdayListScreen> {
+  bool _isAscending = true; // State to track sorting order
+
   // Helper function to parse date with or without leading zeros
   DateTime _parseDate(String birthDate) {
     try {
       return DateFormat('yyyy-MM-dd').parse(birthDate);
     } catch (e) {
-      // Handle dates with single-digit month/day
       final parts = birthDate.split('-');
       final year = int.parse(parts[0]);
       final month = int.parse(parts[1].padLeft(2, '0'));
@@ -20,20 +26,18 @@ class BirthdayListScreen extends StatelessWidget {
     }
   }
 
-  // Helper function to check if a birthday is upcoming within the next 30 days
+  // Helper function to check if a birthday is upcoming within the next 365 days
   bool _isUpcomingBirthday(String birthDate) {
     final birthDateTime = _parseDate(birthDate);
 
     final now = DateTime.now();
     final thisYearBirthday = DateTime(now.year, birthDateTime.month, birthDateTime.day);
 
-    // Check if the birthday is within the next 30 days
     if (thisYearBirthday.isBefore(now)) {
-      // If the birthday has already passed this year, check next year's birthday
       final nextYearBirthday = DateTime(now.year + 1, birthDateTime.month, birthDateTime.day);
-      return nextYearBirthday.difference(now).inDays <= 30;
+      return nextYearBirthday.difference(now).inDays <= 365;
     } else {
-      return thisYearBirthday.difference(now).inDays <= 30;
+      return thisYearBirthday.difference(now).inDays <= 365;
     }
   }
 
@@ -42,8 +46,39 @@ class BirthdayListScreen extends StatelessWidget {
     final favorites = Provider.of<FavoriteProvider>(context).favorites;
     final upcomingBirthdays = favorites.where((user) => _isUpcomingBirthday(user.birthDate)).toList();
 
+    // Sort the upcomingBirthdays list based on the selected order
+    upcomingBirthdays.sort((a, b) {
+      final dateA = _parseDate(a.birthDate);
+      final dateB = _parseDate(b.birthDate);
+
+      return _isAscending ? dateA.compareTo(dateB) : dateB.compareTo(dateA);
+    });
+
     return Scaffold(
-      appBar: AppBar(title: Text("Upcoming Birthdays")),
+      appBar: AppBar(
+        title: Text("Upcoming Birthdays"),
+        actions: [
+          DropdownButton<bool>(
+            value: _isAscending,
+            icon: Icon(Icons.sort),
+            onChanged: (bool? newValue) {
+              setState(() {
+                _isAscending = newValue ?? true;
+              });
+            },
+            items: [
+              DropdownMenuItem(
+                value: true,
+                child: Text("Sort Ascending"),
+              ),
+              DropdownMenuItem(
+                value: false,
+                child: Text("Sort Descending"),
+              ),
+            ],
+          ),
+        ],
+      ),
       body: upcomingBirthdays.isEmpty
           ? Center(child: Text("No upcoming birthdays"))
           : ListView.builder(

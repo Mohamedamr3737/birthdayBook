@@ -32,29 +32,73 @@ class UserListScreen extends StatelessWidget {
                     // Check if any favorite user has the same name as the current user
                     final isFavorite = favoriteProvider.favorites.any((favUser) => favUser.name == user.name);
 
-                    return ListTile(
-                      leading: Image.network(user.profileImage),
-                      title: Text(user.name),
-                      subtitle: Text(user.email),
-                      trailing: IconButton(
-                        icon: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: isFavorite ? Colors.black : null,
-                        ),
-                        onPressed: () {
-                          if (isFavorite) {
-                            favoriteProvider.removeFavorite(user);
-                          } else {
-                            favoriteProvider.addFavorite(user);
-                          }
-                        },
+                    return Card(
+                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => UserProfileScreen(user: user)),
-                        );
-                      },
+                      elevation: 4,
+                      child: Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  backgroundImage: NetworkImage(user.profileImage),
+                                  radius: 30,
+                                ),
+                                SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        user.name,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        user.email,
+                                        style: TextStyle(
+                                          color: Colors.grey[700],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                                    color: isFavorite ? Colors.black : null,
+                                  ),
+                                  onPressed: () {
+                                    if (isFavorite) {
+                                      favoriteProvider.removeFavorite(user);
+                                    } else {
+                                      favoriteProvider.addFavorite(user);
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => UserProfileScreen(user: user)),
+                                );
+                              },
+                              child: Text("View Profile"),
+                            ),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 );
